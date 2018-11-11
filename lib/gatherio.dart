@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+
 class Gatherio {
   static const MethodChannel _channel =
       const MethodChannel('gatherio');
@@ -25,11 +26,11 @@ class Lobby {
     this.ref = await Firestore.instance
     .collection("games").document(this.game)
     .collection("lobbies")
-    .add({"creator":user
+    .add({"creator":user.uid
     , "password":password
     , "open":open
-    , "created":DateTime.now()
-    , "updated":DateTime.now()});
+    , "created": FieldValue.serverTimestamp()
+    , "updated":FieldValue.serverTimestamp()});
 
     return this.ref;
   }
@@ -39,7 +40,7 @@ class Lobby {
 
   Future<void> start(){
     assert(this.ref != null);
-    return this.update({"started": DateTime.now()});
+    return this.update({"started": FieldValue.serverTimestamp()});
   }
 
   Future<void> join({String id}) async {
@@ -50,7 +51,7 @@ class Lobby {
 
     assert(this.ref != null);
     return this.ref
-    .collection("members").document(user.uid).setData({"joined": DateTime.now()});
+    .collection("members").document(user.uid).setData({"joined": FieldValue.serverTimestamp()});
   }
 
   Future<void> update(Map<String, dynamic> data){
@@ -79,9 +80,9 @@ class Lobby {
     assert(message != null && message.isNotEmpty);
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
     this.ref.collection("messages").add({
-      "created": DateTime.now()
+      "created": FieldValue.serverTimestamp()
       , "message": message
-      , "sender": user
+      , "sender": user.uid
     });
   }
 
