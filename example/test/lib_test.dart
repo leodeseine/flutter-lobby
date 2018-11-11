@@ -5,9 +5,6 @@ import 'package:gatherio/gatherio.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-final FirebaseAuth _auth = FirebaseAuth.instance;
-
-
 void main(){
 
   /*test('adds one to input values', () {
@@ -20,7 +17,7 @@ void main(){
 
   test('create a lobby',()async{
     //connect player
-    final FirebaseUser user = await _auth.signInAnonymously();
+    final FirebaseUser user = await FirebaseAuth.instance.signInAnonymously();
 
     //Create lobby
     final lobby = new Lobby("Test");

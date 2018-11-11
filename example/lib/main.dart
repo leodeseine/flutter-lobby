@@ -4,6 +4,9 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:gatherio/gatherio.dart';
 
+import 'package:gatherio/gatherio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatefulWidget {
@@ -13,11 +16,47 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
-
+  bool connected = false;
+  String connectionState = "Unknown";
+  String userId = "Unknown";
+  FirebaseUser user;
   @override
-  void initState() {
+  void initState(){
     super.initState();
     initPlatformState();
+    initFirebaseUser();
+  }
+
+  void onClick(){
+    setState(() {
+      if (this.user == null){
+        initFirebaseUser();
+      }else{
+        disconnectUser();
+      }
+    });
+  }
+
+  Future<void> disconnectUser() async {
+    await FirebaseAuth.instance.signOut();
+    this.userId = "";
+    connectionState = "Connect";
+    this.user = null;
+  }
+
+  Future<void> initFirebaseUser() async {
+    FirebaseUser userfb =  await FirebaseAuth.instance.signInAnonymously();
+    this.user = userfb;
+    setState(() {
+          userId = this.user.uid;
+          connectionState = "Disconnect";
+        });
+  }
+
+  Future<void> createLobby() async {
+      Lobby lobby = new Lobby("test");
+      await lobby.join();
+      await lobby.sendMessage("Lobby crée le " + DateTime.now().toString());
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -47,8 +86,13 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+        body: ListView(
+          children: [
+            RaisedButton(onPressed: onClick
+            ,child: Text(connectionState)),
+            Text(userId),
+            RaisedButton(onPressed: createLobby,child: Text("Create Lobby"))
+          ],
         ),
       ),
     );
