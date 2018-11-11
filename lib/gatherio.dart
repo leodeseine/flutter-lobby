@@ -71,6 +71,11 @@ class Lobby {
     return this.ref.collection("members").document(memberId).updateData(data);
   }
 
+  Future<bool> isInLobby(String memberId) async {
+    DocumentSnapshot snapshot = await this.ref.collection("members").document(memberId).get();
+    return snapshot.exists;
+  }
+
   // todo : message page length
   Future<QuerySnapshot> messages({bool descending=false}){
     return this.ref.collection("messages").orderBy("created",descending: descending).getDocuments();
