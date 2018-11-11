@@ -21,20 +21,6 @@ class Lobby {
   String game;
   DocumentReference ref;
 
-  Future<DocumentReference> create({String password="",bool open=false}) async{
-    FirebaseUser user = await FirebaseAuth.instance.currentUser();
-    this.ref = await Firestore.instance
-    .collection("games").document(this.game)
-    .collection("lobbies")
-    .add({"creator":user.uid
-    , "password":password
-    , "open":open
-    , "created": FieldValue.serverTimestamp()
-    , "updated":FieldValue.serverTimestamp()});
-
-    return this.ref;
-  }
-
   Lobby(this.game);
 
 
@@ -43,13 +29,24 @@ class Lobby {
     return this.update({"started": FieldValue.serverTimestamp()});
   }
 
-  Future<void> join({String id}) async {
-    if (id == null){
-      await this.create();
-    }
+Future<void> join({String id}) async {
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    // assert user is connected
+    final lobbies = Firestore.instance
+      .collection("games").document(this.game)
+      .collection("lobbies");
 
-    assert(this.ref != null);
+    if (id == null){
+      DocumentReference doc = await lobbies.add({"creator":user.uid,
+          "open":false,
+          "created": FieldValue.serverTimestamp(),
+          "updated":FieldValue.serverTimestamp()});
+      id = doc.documentID;
+    }
+    this.ref = lobbies.document(id);
+    DocumentSnapshot tmpSnap =  await this.ref.get();
+    assert(tmpSnap.exists);
+
     return this.ref
     .collection("members").document(user.uid).setData({"joined": FieldValue.serverTimestamp()});
   }
