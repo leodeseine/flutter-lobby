@@ -1,4 +1,4 @@
-package com.gatherio.gatherio.gatherioexample
+package com.gatherio.example
 
 import android.os.Bundle
 
